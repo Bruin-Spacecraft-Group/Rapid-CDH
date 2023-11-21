@@ -13,11 +13,11 @@ class task(Task):
 
 
     def senddata(self):
-        pass
+        print('comms is sending data')
 
     async def main_task(self):
         if self.satellite.isRecieving:
-            pass
+            print('comms is in receive mode')
         else:
             self.senddata(self.satellite.downlinkdata)
         
