@@ -3,19 +3,6 @@
 
 import asyncio
 
-possible_tasks = []
-
-def start_task(task):
-    while True:
-        task.main_task()
-        await asyncio.sleep(1 / task.frequency);
-
-
-if __name__ == "__main__":
-async def main():
-    for tasks in possible_tasks:
-        start_task(tasks)
-
 class Task:
 
     """
@@ -33,7 +20,7 @@ class Task:
     name = 'temp'
     color = 'gray'
 
-    def __init__(self, satellite):
+    def __init__(self, satellite, a):
         """
         Initialize the Task using the PyCubed cubesat object.
         
@@ -41,6 +28,7 @@ class Task:
         :param satellite: The cubesat to be registered
 
         """
+        self.a = a
         self.cubesat = satellite
 
     def debug(self,msg,level=1):
@@ -57,7 +45,8 @@ class Task:
             print(f'\t   └── {msg}')
 
     async def main_task(self, *args, **kwargs):
-        print("yo")
+        print(self.a)
+
         """
         Contains the code for the user defined task. 
 
@@ -66,6 +55,32 @@ class Task:
 
         """
         pass
+
+class Satellite:
+    data = {}
+
+# init the sat
+satellite = Satellite()
+
+
+possible_tasks = [Task(satellite, 1), Task(satellite, 2)]
+
+async def start_task(task):
+    print("b")
+    while True:
+        await task.main_task()
+        await asyncio.sleep(1 / task.frequency);
+
+async def main():
+    await asyncio.gather(*[start_task(task) for task in possible_tasks])
+
+if __name__ == "__main__":
+    import time
+    s = time.perf_counter()
+    asyncio.run(main())
+    elapsed = time.perf_counter() - s
+    print(f"{__file__} executed in {elapsed:0.2f} seconds.")
+
 
 
 
