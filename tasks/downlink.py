@@ -3,7 +3,7 @@
 
 from Tasks.template_task import task
 
-class task(Task):
+class Comms_downlink_task(Task):
     priority = 1
     frequency = 1/10
     name = 'downlink'

@@ -62,8 +62,8 @@ class Satellite:
 # init the sat
 satellite = Satellite()
 
-
-possible_tasks = [Task(satellite, 1), Task(satellite, 2)]
+from tasks.downlink import Comms_downlink_task
+possible_tasks = [Task(satellite, 1), Comms_downlink_task(satellite, 2)]
 
 async def start_task(task):
     print("b")
