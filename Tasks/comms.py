@@ -66,7 +66,6 @@ class CommsMainTask(Task):
     logged_data = []
 
     def encode_data(self, data):
-        # perform data encoding that Kelanu (aka. Thanos) will determine
         for datapoint in data:
             encoded_data = datapoint.encode()
         return encoded_data
@@ -94,9 +93,15 @@ class CommsMainTask(Task):
                 # encode the data
                 encoded_data = self.encode_data(self.logged_data)
 
+                # encrypt the data
+                # perform data encoding that Kelanu (aka. Thanos) will determine
+                # ... TBD
+
                 # transmit the data
                 io_transmit_data(encoded_data)
-        
+
+                # end of transmission, go back to scanning
+                self.mode = CommsModes.SCANNING
 
         # encode data
         # truncate data
