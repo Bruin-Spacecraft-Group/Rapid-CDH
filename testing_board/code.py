@@ -1,7 +1,7 @@
 import asyncio
 import time
 
-sensorValue = 0
+sensorValue = 0x8080
 spiReadBytes = bytearray([0, 0])
 spiWriteBytes = bytearray([0, 0])
 
@@ -19,7 +19,7 @@ async def sensorReadTask():
     # regularly updates `sensorValue` based on the feedback from the sensor
     global sensorValue
     while True:
-        sensorValue += 1
+        sensorValue += 3
         await asyncio.sleep(2.3)
 
 async def feedbackTask():
