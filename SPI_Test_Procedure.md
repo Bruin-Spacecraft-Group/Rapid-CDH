@@ -12,7 +12,7 @@
  `busio.SPI(clock=board.SCK, MOSI=board.MOSI, MISO=board.MISO)`.
  * Connect the data signals of the boards according to the following table:
 
-    | <div style="width:100px">Signal</div> | <div style="width:75px">CDH Pin</div> | <div style="width:75px">TST Pin</div> |
+    | <span style="display: inline-block; width:100px">Signal</span> | <span style="display: inline-block; width:75px">CDH Pin</span> | <span style="display: inline-block; width:75px">TST Pin</span> |
     | ----- | ----- | ----- |
     | MOSI | 29 | 29 |
     | SCK | 30 | 30 |
@@ -29,7 +29,7 @@
  `busio.SPI(clock=board.D12, MOSI=board.D13, MISO=board.D10)`.
  * Connect the data signals of the boards according to the following table:
 
-    | <div style="width:100px">Signal</div> | <div style="width:75px">CDH Pin</div> | <div style="width:75px">TST Pin</div> |
+    | <span style="display: inline-block; width:100px">Signal</span> | <span style="display: inline-block; width:75px">CDH Pin</span> | <span style="display: inline-block; width:75px">TST Pin</span> |
     | ----- | ----- | ----- |
     | MOSI | 35 | 29 |
     | SCK | 36 | 30 |
@@ -46,7 +46,7 @@
  `busio.SPI(clock=board.D12, MOSI=board.D13, MISO=board.D10)`.
  * Connect the data signals of the boards according to the following table:
 
-    | <div style="width:100px">Signal</div> | <div style="width:75px">CDH Pin</div> | <div style="width:75px">TST Pin</div> |
+    | <span style="display: inline-block; width:100px">Signal</span> | <span style="display: inline-block; width:75px">CDH Pin</span> | <span style="display: inline-block; width:75px">TST Pin</span> |
     | ----- | ----- | ----- |
     | MOSI | 35 | 35 |
     | SCK | 36 | 36 |
