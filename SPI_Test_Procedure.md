@@ -12,7 +12,7 @@
  `busio.SPI(clock=board.SCK, MOSI=board.MOSI, MISO=board.MISO)`.
  * Connect the data signals of the boards according to the following table:
 
-    | <span style="display: inline-block; width:100px">Signal</span> | <span style="display: inline-block; width:75px">CDH Pin</span> | <span style="display: inline-block; width:75px">TST Pin</span> |
+    | Signal &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | CDH Pin &nbsp;&nbsp;&nbsp; | TST Pin &nbsp;&nbsp;&nbsp; |
     | ----- | ----- | ----- |
     | MOSI | 29 | 29 |
     | SCK | 30 | 30 |
@@ -29,7 +29,7 @@
  `busio.SPI(clock=board.D12, MOSI=board.D13, MISO=board.D10)`.
  * Connect the data signals of the boards according to the following table:
 
-    | <span style="display: inline-block; width:100px">Signal</span> | <span style="display: inline-block; width:75px">CDH Pin</span> | <span style="display: inline-block; width:75px">TST Pin</span> |
+    | Signal &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | CDH Pin &nbsp;&nbsp;&nbsp; | TST Pin &nbsp;&nbsp;&nbsp; |
     | ----- | ----- | ----- |
     | MOSI | 35 | 29 |
     | SCK | 36 | 30 |
@@ -46,7 +46,7 @@
  `busio.SPI(clock=board.D12, MOSI=board.D13, MISO=board.D10)`.
  * Connect the data signals of the boards according to the following table:
 
-    | <span style="display: inline-block; width:100px">Signal</span> | <span style="display: inline-block; width:75px">CDH Pin</span> | <span style="display: inline-block; width:75px">TST Pin</span> |
+    | Signal &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | CDH Pin &nbsp;&nbsp;&nbsp; | TST Pin &nbsp;&nbsp;&nbsp; |
     | ----- | ----- | ----- |
     | MOSI | 35 | 35 |
     | SCK | 36 | 36 |
@@ -55,5 +55,3 @@
 
  * Verify that both boards are printing out simulated sensor values as X in "Wrote X to SPI" and printing out the simulated sensor values of
  the other board as Y in "Read Y from SPI".
-
-
