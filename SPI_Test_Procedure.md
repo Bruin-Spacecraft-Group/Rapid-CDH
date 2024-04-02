@@ -43,7 +43,7 @@
 ## Part 4: Validate Peripheral Mode on Alternate SERCOMs
  * Keep the flight computer test board on SERCOM1 for SPI by making sure the pin parameters in the constructor match
  `busio.SPI(clock=board.D12, MOSI=board.D13, MISO=board.D10)`.
- * Move the flight computer test board to SPI on SERCOM1 by making the pin parameters in the constructor match
+ * Move the subsystem test board to SPI on SERCOM1 by making the pin parameters in the constructor match
  `busio.SPI(clock=board.D12, MOSI=board.D13, MISO=board.D11, SS=board.D10)`.
  * Connect the data signals of the boards according to the following table:
 
