@@ -1,42 +1,38 @@
-import asyncio
-import time
+import board
+import microcontroller
+import digitalio
+import busio
+
+
+inter_subsystem_spi_bus = busio.SPI(
+    board.SCK,
+    MOSI=board.MOSI,
+    MISO=microcontroller.pin.PA15,
+    SS=board.MISO,
+    slave_mode=True,
+)
+while inter_subsystem_spi_bus.try_lock():
+    pass
+inter_subsystem_spi_bus.configure()  # baudrate, polarity, etc. available here as kw params
+
+
+def send_receive(transmit_buffer, receive_buffer):
+    inter_subsystem_spi_bus.write_readinto(transmit_buffer, receive_buffer)
+
 
 sensorValue = 0x8080
-spiReadBytes = bytearray([0, 0])
-spiWriteBytes = bytearray([0, 0])
+spiReadBytes = bytearray([0, 0, 0])
+spiWriteBytes = bytearray([0, 0, 0])
 
-async def spiWriteTask():
-    global spiReadBytes, spiWriteBytes
-    from inter_subsystem_spi import send_receive
-    while True:
-        # communicates commands with subsystem X
-        spiWriteBytes[0] = (sensorValue & 0xff00) >> 8
-        spiWriteBytes[1] = sensorValue & 0xff
-        await send_receive(spiWriteBytes, spiReadBytes)
-        await asyncio.sleep(0.9)
-
-async def sensorReadTask():
-    # regularly updates `sensorValue` based on the feedback from the sensor
-    global sensorValue
-    while True:
-        sensorValue += 3
-        await asyncio.sleep(2.3)
-
-async def feedbackTask():
-    # send debug data to the USB serial regularly
-    global sensorValue, spiReadBytes, spiWriteBytes
-    while True:
-        print("Wrote", list(bytes(spiWriteBytes)), "to SPI")
-        print("Read", list(bytes(spiReadBytes)), "from SPI")
-        await asyncio.sleep(1)
-
-async def idleTask():
-    while True:
-        # Forces CircuitPython to call `RUN_BACKGROUND_TASKS` at 10Hz to maintain USB connection
-        await asyncio.sleep(0.02)
-        await time.sleep(0.02)
-
-async def gatheredTask():
-    await asyncio.gather(spiWriteTask(), sensorReadTask(), feedbackTask(), idleTask())
-
-asyncio.run(gatheredTask())
+while True:
+    # communicates commands with subsystem X
+    spiWriteBytes[0] = (sensorValue & 0xFF00) >> 8
+    spiWriteBytes[1] = sensorValue & 0xFF
+    send_receive(spiWriteBytes, spiReadBytes)
+    sensorValue += 1
+    if sensorValue % 1 == 0:
+        print("TST wrote", list(bytes(spiWriteBytes))[:-1], "to SPI")
+        print("TST read ", list(bytes(spiReadBytes))[:-1], "from SPI")
+    busywait = 0
+    while busywait < 100:
+        busywait += 1
