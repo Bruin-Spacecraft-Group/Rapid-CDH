@@ -5,7 +5,7 @@
  * Load the BruinSpace CircuitPython firmware onto the cdh test board (CDH) and the subsystem test board (TST) using the UF2 bootloader.
  * Load both the files in the `flight_computer` folder and the entire `lib` folder onto the cdh test board and open a serial monitor on the laptop connected to the board.
  * Load the files in the `testing_board` folder and the entire `lib` folder onto the subsystem test board and open a serial monitor on the laptop connected to the board.
- * Verify that both boards are printing out simulated sensor values as X in "Wrote X to SPI" and printing out zeros as Y in "Read Y from SPI".
+ * Verify that the cdh test board is printing out simulated sensor values as X in "Wrote X to SPI" and printing out zeros as Y in "Read Y from SPI" and that the subsystem test board is non-responsive.
 
 ## Part 2: Validate Two-Way Communication
  * Ensure that both boards are using the default SPI (SERCOM2) by making sure the pin parameters in the constructor on CDH match
