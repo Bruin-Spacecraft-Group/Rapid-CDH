@@ -13,10 +13,10 @@ import digitalio
 import adafruit_ov5640
 
 #============= Setting Up Output =============
-switch=digitalio.DigitalInOut(board.D2)
+switch=digitalio.DigitalInOut(board.D2) # Replace D2 with proper pin
 switch.switch_to_input()
 
-if switch.value==True: # if pin D6 is pulled high, then datalog mode -- no USB write allowed
+if switch.value==True: # if pin is pulled high, then datalog mode -- no USB write allowed
     try:
         with open('/data.txt','ab') as f:
             pass
@@ -25,7 +25,7 @@ if switch.value==True: # if pin D6 is pulled high, then datalog mode -- no USB w
 
 #============= Connect to Camera =============
 
-bus = busio.I2C(scl=board.CAMERA_SIOC, sda=board.CAMERA_SIOD)
+bus = busio.SPI(clock=board.GP2, MOSI=board.GP3, MISO=board.GP4) # Replace GP2, GP3, GP4 with proper pins
 cam = adafruit_ov5640.OV5640(
     bus,
     data_pins=board.CAMERA_DATA,
