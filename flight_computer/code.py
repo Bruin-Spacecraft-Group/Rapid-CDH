@@ -27,42 +27,42 @@ async def send_receive(transmit_buffer, receive_buffer):
     test_board_cs.value = True
 
 
-sensorValue = 0x50607080
-spiReadBytes = bytearray([0] * 4)
-spiWriteBytes = bytearray([0] * 4)
+sensor_value = 0x50607080
+spi_read_bytes = bytearray([0] * 4)
+spi_write_bytes = bytearray([0] * 4)
 
 
-async def spiWriteTask():
-    global spiReadBytes, spiWriteBytes, sensorValue, inter_subsystem_spi_bus
+async def spi_write_task():
+    global spi_read_bytes, spi_write_bytes, sensor_value, inter_subsystem_spi_bus
     while True:
         # communicates commands with subsystem X
-        spiWriteBytes[0] = (sensorValue & 0xFF000000) >> 24
-        spiWriteBytes[1] = (sensorValue & 0xFF0000) >> 16
-        spiWriteBytes[2] = (sensorValue & 0xFF00) >> 8
-        spiWriteBytes[3] = (sensorValue & 0xFF) >> 0
-        await send_receive(spiWriteBytes, spiReadBytes)
+        spi_write_bytes[0] = (sensor_value & 0xFF000000) >> 24
+        spi_write_bytes[1] = (sensor_value & 0xFF0000) >> 16
+        spi_write_bytes[2] = (sensor_value & 0xFF00) >> 8
+        spi_write_bytes[3] = (sensor_value & 0xFF) >> 0
+        await send_receive(spi_write_bytes, spi_read_bytes)
         await asyncio.sleep(0.01)
 
 
-async def sensorReadTask():
-    # regularly updates `sensorValue` based on the feedback from the sensor
-    global sensorValue
+async def sensor_read_task():
+    # regularly updates `sensor_value` based on the feedback from the sensor
+    global sensor_value
     while True:
-        sensorValue += 1
+        sensor_value += 1
         await asyncio.sleep(0.1)
 
 
-async def feedbackTask():
+async def feedback_task():
     # send debug data to the USB serial regularly
-    global sensorValue, spiReadBytes, spiWriteBytes
+    global sensor_value, spi_read_bytes, spi_write_bytes
     while True:
-        print("CDH wrote", list(bytes(spiWriteBytes)), "to SPI")
-        print("CDH read", list(bytes(spiReadBytes)), "from SPI")
+        print("CDH wrote", list(bytes(spi_write_bytes)), "to SPI")
+        print("CDH read", list(bytes(spi_read_bytes)), "from SPI")
         await asyncio.sleep(1)
 
 
-async def gatheredTask():
-    await asyncio.gather(spiWriteTask(), sensorReadTask(), feedbackTask())
+async def gathered_task():
+    await asyncio.gather(spi_write_task(), sensor_read_task(), feedback_task())
 
 
-asyncio.run(gatheredTask())
+asyncio.run(gathered_task())
