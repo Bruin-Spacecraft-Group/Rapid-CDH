@@ -1,0 +1,6 @@
+[submodule "submodules/Adafruit_CircuitPython_asyncio"]
+	path = submodules/Adafruit_CircuitPython_asyncio
+	url = https://github.com/adafruit/Adafruit_CircuitPython_asyncio.git
+[submodule "submodules/Adafruit_CircuitPython_Ticks"]
+	path = submodules/Adafruit_CircuitPython_Ticks
+	url = https://github.com/adafruit/Adafruit_CircuitPython_Ticks
