@@ -5,6 +5,14 @@ import os
 import shutil
 
 
+def RED(text):
+    return "\033[91m" + text + "\033[0m"
+
+
+def GREEN(text):
+    return "\033[92m" + text + "\033[0m"
+
+
 # === BEGIN: Platform-specific code ===
 # To deploy to a CircuitPython board masquerading as a USB drive with a certain name,
 # we must be able to find all the mounted USB drives on the system and check their names.
@@ -39,6 +47,19 @@ if os.name == "nt":
                 drives.append((drive, drive_name))
         return drives
 
+elif os.name == "posix":
+
+    def find_mount_points_with_names():
+        drives = []
+        mount_proc = subprocess.run(["mount"], stdout=subprocess.PIPE)
+        for mount_line in mount_proc.stdout.decode().splitlines():
+            if mount_line.startswith("/"):
+                mount_parts = mount_line.split(" ")
+                mount_point = mount_parts[2]
+                if mount_point.startswith("/Volumes"):
+                    drives.append((mount_point, mount_point.removeprefix("/Volumes/")))
+        return drives
+
 else:
     print(
         RED(
@@ -57,14 +78,6 @@ else:
 # The rest of the program is implemented using cross-platform functions from the
 # Python library, and should work on any system so long as the platform-specific
 # functions are implemented with the appropriate contracts.
-
-
-def RED(text):
-    return "\033[91m" + text + "\033[0m"
-
-
-def GREEN(text):
-    return "\033[92m" + text + "\033[0m"
 
 
 parser = argparse.ArgumentParser(
