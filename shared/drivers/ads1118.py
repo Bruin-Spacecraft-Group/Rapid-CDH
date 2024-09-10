@@ -15,6 +15,15 @@ class ADS1118_MUX_SELECT:
     TEMPERATURE = 255
 
 
+class ADS1118_FSR:
+    FSR_6144V = 0
+    FSR_4096V = 1
+    FSR_2048V = 2
+    FSR_1024V = 3
+    FSR_0512V = 4
+    FSR_0256V = 5  # 6 and 7 are also valid here
+
+
 class ADS1118_SAMPLE_RATE:
     RATE_8 = 0
     RATE_16 = 1
@@ -24,15 +33,6 @@ class ADS1118_SAMPLE_RATE:
     RATE_250 = 5
     RATE_475 = 6
     RATE_860 = 7
-
-
-class ADS1118_FSR:
-    FSR_6144V = 0
-    FSR_4096V = 1
-    FSR_2048V = 2
-    FSR_1024V = 3
-    FSR_0512V = 4
-    FSR_0256V = 7
 
 
 class ADS1118:
@@ -104,5 +104,4 @@ class ADS1118:
                 (ADS1118_FSR.FSR_0256V, 7.8125e-6),
             ]
         )[fsr]
-        7.8125e-6
         return int.from_bytes(receive_buffer, "big", signed=True) * lsb_size
