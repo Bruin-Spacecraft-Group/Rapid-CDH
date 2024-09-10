@@ -35,6 +35,13 @@ class ADS1118_SAMPLE_RATE:
     RATE_860 = 7
 
 
+# When running on an spi bus slower than 40 kHz, async transfers should be used
+# to maintain responsiveness of all tasks. When running on an spi bus which is
+# faster than this, the overhead of ayncio context switching dominates the time
+# taken, and synchronous transfers are more efficient.
+ADS1118_ASYNC_TRANSFER = False
+
+
 class ADS1118:
     def __init__(self, spi_device):
         self.spi_device = spi_device
@@ -52,7 +59,16 @@ class ADS1118:
             channel, input_range, sample_rate
         )
         receive_buffer = bytearray([0, 0])
-        await self.spi_device.async_transfer(transmit_buffer, receive_buffer)
+
+        if ADS1118_ASYNC_TRANSFER:
+            await self.spi_device.async_transfer(transmit_buffer, receive_buffer)
+        else:
+            while not self.spi_device.get_spi().try_lock():
+                await asyncio.sleep(0)
+            self.spi_device.get_chip_select_pin().value = False
+            self.spi_device.get_spi().write_readinto(transmit_buffer, receive_buffer)
+            self.spi_device.get_chip_select_pin().value = True
+            self.spi_device.get_spi().unlock()
 
         data_ready = False
         while not data_ready:
@@ -66,7 +82,16 @@ class ADS1118:
             self.spi_device.get_chip_select_pin().value = True
             self.spi_device.get_spi().unlock()
 
-        await self.spi_device.async_transfer(transmit_buffer, receive_buffer)
+        if ADS1118_ASYNC_TRANSFER:
+            await self.spi_device.async_transfer(transmit_buffer, receive_buffer)
+        else:
+            while not self.spi_device.get_spi().try_lock():
+                await asyncio.sleep(0)
+            self.spi_device.get_chip_select_pin().value = False
+            self.spi_device.get_spi().write_readinto(transmit_buffer, receive_buffer)
+            self.spi_device.get_chip_select_pin().value = True
+            self.spi_device.get_spi().unlock()
+
         if channel == ADS1118_MUX_SELECT.TEMPERATURE:
             return ADS1118._temperature_from_bytes(receive_buffer)
         else:
