@@ -16,6 +16,10 @@ def YELLOW(text):
     return "\033[93m" + text + "\033[0m"
 
 
+def CYAN(text):
+    return "\033[96m" + text + "\033[0m"
+
+
 parser = argparse.ArgumentParser(
     description="Run this script to create a testapp corresponding to each regular app "
     + "in the applications folder. The testapp groups shared and program-specific code "
@@ -40,7 +44,7 @@ for app in os.listdir(applications_dir):
         print(f"Not generating unit tests for application {app}: already a test app")
         continue
 
-    print(f"Generating application {app}_testapp...")
+    print(CYAN(f"Generating application {app}_testapp..."))
     test_app_dir = os.path.join(".", "applications", f"{app}_testapp")
     print(f"Removing old test application...")
     if os.path.exists(test_app_dir):
@@ -75,5 +79,5 @@ for app in os.listdir(applications_dir):
         pytest_directories.append(test_app_dir)
 
 for test_app_dir in pytest_directories:
-    print(GREEN(f"Running pytest for {test_app_dir}..."))
+    print(CYAN(f"Running pytest for {test_app_dir}..."))
     subprocess.run(["python", "-m", "pytest"], cwd=test_app_dir)

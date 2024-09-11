@@ -13,6 +13,10 @@ def GREEN(text):
     return "\033[92m" + text + "\033[0m"
 
 
+def CYAN(text):
+    return "\033[96m" + text + "\033[0m"
+
+
 # === BEGIN: Platform-specific code ===
 # To deploy to a CircuitPython board masquerading as a USB drive with a certain name,
 # we must be able to find all the mounted USB drives on the system and check their names.
@@ -91,7 +95,7 @@ parser.add_argument("deploy_type", nargs="?", default="flight_computer")
 parser.add_argument("target_drive", nargs="?", default="CIRCUITPY")
 args = parser.parse_args()
 print(
-    GREEN(
+    CYAN(
         f"Starting deploy type {args.deploy_type} to CircuitPython board with name {args.target_drive}..."
     )
 )
@@ -158,7 +162,7 @@ for item in os.listdir(os.path.join(".", "applications", args.deploy_type)):
     else:
         shutil.copyfile(src_item_path, dst_item_path, follow_symlinks=True)
 
-print("Removing and generated __pycache__ directories copied to device...")
+print("Removing any generated __pycache__ directories copied to device...")
 for tree in os.walk(target_drives[0], followlinks=True):
     if "__pycache__" in tree[1]:
         shutil.rmtree(os.path.join(tree[0], "__pycache__"))
