@@ -19,8 +19,10 @@ from unittest.mock import MagicMock
 # should be mocked away. For instance, modules which are available in
 # CircuitPython but not standard Python.
 MOCK_MODULES = [
-    "adafruit_ble.BLERadio",
-    "adafruit_ble.advertising.adafruit.AdafruitRadio",
+    "digitalio.DigitalInOut",
+    "busio",
+    "board",
+    "spitarget",
 ]
 
 
@@ -52,3 +54,4 @@ def pytest_runtest_setup(item):
 
 # Initial mocking needed to stop ImportError when importing module under test.
 mock_imported_modules()
+print("hi from conftest")
