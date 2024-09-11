@@ -15,18 +15,23 @@ to state remain isolated between tests).
 import sys
 from unittest.mock import MagicMock
 
-# Add fully qualified namespace paths to things that are imported, but which
-# should be mocked away. For instance, modules which are available in
-# CircuitPython but not standard Python.
-MOCK_MODULES = [
-    "digitalio.DigitalInOut",
-    "busio",
-    "board",
-    "spitarget",
-]
+
+def get_unavailable_firmware_modules():
+    import importlib
+    import os
+    import json
+
+    res = []
+    firmware_modules = json.load(
+        open(os.path.join("..", "..", "config", "firmware_modules.json"))
+    )
+    for module in firmware_modules["STABLE"] + firmware_modules["PRERELEASE"]:
+        if module not in sys.modules and importlib.util.find_spec(module) is None:
+            res.append(module)
+    return res
 
 
-def mock_imported_modules():
+def mock_modules(MOCK_MODULES):
     """
     Mocks away the modules named in MOCK_MODULES, so the module under test
     can be imported with modules which may not be available.
@@ -49,9 +54,12 @@ def pytest_runtest_setup(item):
     Recreates afresh the mocked away modules so state between tests remains
     isolated.
     """
-    mock_imported_modules()
+    if sys.platform != "MicroChip SAMD51":
+        MOCK_MODULES = get_unavailable_firmware_modules()
+        mock_modules(MOCK_MODULES)
+        # CircuitPython does something equivalent to this internally
+        sys.path.append("lib")
 
 
-# Initial mocking needed to stop ImportError when importing module under test.
-mock_imported_modules()
-print("hi from conftest")
+# Initial pre-setup configuration needed to stop ImportError when importing modules
+pytest_runtest_setup(None)

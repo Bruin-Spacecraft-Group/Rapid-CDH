@@ -8,7 +8,7 @@ import spi
 
 
 inter_subsystem_spi_bus = spi.spi_bus(clock=board.D12, MOSI=board.D13, MISO=board.D10)
-while inter_subsystem_spi_bus.try_lock():
+while not inter_subsystem_spi_bus.try_lock():
     pass
 inter_subsystem_spi_bus.configure()  # baudrate, polarity, etc. available here as kw params
 inter_subsystem_spi_bus.unlock()

@@ -107,7 +107,10 @@ class ADS1118:
     def _build_config_register_bytearray(channel, input_range, sample_rate):
         return bytearray(
             [
-                (0b1 << 7) | ((channel & 0b111) << 4) | ((input_range & 0b111) << 1),
+                (0b1 << 7)
+                | ((channel & 0b111) << 4)
+                | ((input_range & 0b111) << 1)
+                | 1,
                 ((sample_rate & 0b111) << 5)
                 | ((channel == ADS1118_MUX_SELECT.TEMPERATURE) << 4)
                 | 0b1010,

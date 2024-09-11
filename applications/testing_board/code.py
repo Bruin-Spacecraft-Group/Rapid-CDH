@@ -13,7 +13,7 @@ inter_subsystem_spi_bus = busio.SPI(
     SS=board.D10,
     slave_mode=True,
 )
-while inter_subsystem_spi_bus.try_lock():
+while not inter_subsystem_spi_bus.try_lock():
     pass
 inter_subsystem_spi_bus.configure()  # baudrate, polarity, etc. available here as kw params
 
@@ -62,4 +62,5 @@ async def gathered_task():
     await asyncio.gather(spi_write_task(), sensor_read_task(), feedback_task())
 
 
-asyncio.run(gathered_task())
+if __name__ == "__main__":
+    asyncio.run(gathered_task())

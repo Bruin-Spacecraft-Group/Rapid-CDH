@@ -17,4 +17,5 @@ async def gathered_task():
     await asyncio.gather(inter_subsystem_spi_task(), inter_subsystem_spi_debug_task())
 
 
-asyncio.run(gathered_task())
+if __name__ == "__main__":
+    asyncio.run(gathered_task())
