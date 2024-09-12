@@ -78,6 +78,9 @@ for app in os.listdir(applications_dir):
     if args.run_tests:
         pytest_directories.append(test_app_dir)
 
+tests_passed = True
 for test_app_dir in pytest_directories:
     print(CYAN(f"Running pytest for {test_app_dir}..."))
-    subprocess.run(["python", "-m", "pytest"], cwd=test_app_dir)
+    if subprocess.run(["python", "-m", "pytest"], cwd=test_app_dir).returncode != 0:
+        tests_passed = False
+exit(0 if tests_passed else 1)

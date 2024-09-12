@@ -3,7 +3,7 @@ import unittest
 import ads1118
 
 
-class TestStringMethods(unittest.TestCase):
+class ADS1118_Test(unittest.TestCase):
 
     def test_parameter_validation(self):
 
