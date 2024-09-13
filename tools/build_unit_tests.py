@@ -40,15 +40,15 @@ pytest_directories = []
 for app in os.listdir(applications_dir):
 
     if app.startswith(".DS_Store"):
-        print(f"Skipping application {app}: .DS_Store directory.")
+        print(f"Not generating unit tests for application {app}: .DS_Store directory.")
         continue
-
-    source_dir = os.path.join(applications_dir, app)
-    test_source_dir = os.path.join(unit_test_dir, f"{app}_test")
 
     if app.endswith("_testapp"):
         print(f"Not generating unit tests for application {app}: already a test app")
         continue
+
+    source_dir = os.path.join(applications_dir, app)
+    test_source_dir = os.path.join(unit_test_dir, f"{app}_test")
 
     print(CYAN(f"Generating application {app}_testapp..."))
     test_app_dir = os.path.join(".", "applications", f"{app}_testapp")
