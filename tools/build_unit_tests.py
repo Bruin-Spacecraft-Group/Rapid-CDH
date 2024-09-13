@@ -2,6 +2,7 @@ import os
 import shutil
 import argparse
 import subprocess
+import sys
 
 
 def RED(text):
@@ -37,6 +38,11 @@ shared_test_source_dir = os.path.join(".", "unit_tests", "shared")
 pytest_directories = []
 
 for app in os.listdir(applications_dir):
+
+    if app.startswith(".DS_Store"):
+        print(f"Skipping application {app}: .DS_Store directory.")
+        continue
+
     source_dir = os.path.join(applications_dir, app)
     test_source_dir = os.path.join(unit_test_dir, f"{app}_test")
 
@@ -81,6 +87,6 @@ for app in os.listdir(applications_dir):
 tests_passed = True
 for test_app_dir in pytest_directories:
     print(CYAN(f"Running pytest for {test_app_dir}..."))
-    if subprocess.run(["python", "-m", "pytest"], cwd=test_app_dir).returncode != 0:
+    if subprocess.run(["sys.executable", "-m", "pytest"], cwd=test_app_dir).returncode != 0:
         tests_passed = False
 exit(0 if tests_passed else 1)
