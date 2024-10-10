@@ -2,6 +2,7 @@ import argparse
 import subprocess
 import sys
 import os
+import platform
 import shutil
 
 
@@ -51,7 +52,7 @@ if os.name == "nt":
                 drives.append((drive, drive_name))
         return drives
 
-elif os.name == "posix":
+elif platform.system() == "Darwin":
 
     def find_mount_points_with_names():
         drives = []
