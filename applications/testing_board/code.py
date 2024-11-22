@@ -2,65 +2,56 @@ import board
 import microcontroller
 import digitalio
 import busio
+import spitarget
 
 import asyncio
 import time
 
-inter_subsystem_spi_bus = busio.SPI(
-    clock=board.D12,
-    MOSI=board.D13,
-    MISO=board.D11,
-    SS=board.D10,
-    slave_mode=True,
+inter_subsystem_spi_bus = spitarget.SPITarget(
+    sck=board.D12,
+    mosi=board.D13,
+    miso=board.D11,
+    ss=board.D10
 )
-while not inter_subsystem_spi_bus.try_lock():
-    pass
-inter_subsystem_spi_bus.configure()  # baudrate, polarity, etc. available here as kw params
-
 
 async def send_receive(transmit_buffer, receive_buffer):
-    inter_subsystem_spi_bus.async_transfer_start(transmit_buffer, receive_buffer)
-    while not inter_subsystem_spi_bus.async_transfer_finished():
+    inter_subsystem_spi_bus.load_packet(
+        mosi_packet=receive_buffer,
+        miso_packet=transmit_buffer
+    )
+    while not inter_subsystem_spi_bus.try_transfer():
         await asyncio.sleep(0)
-    inter_subsystem_spi_bus.async_transfer_end()
 
+sensorValue = 0x10203040
+spiReadBytes = bytearray([0] * 4)
+spiWriteBytes = bytearray([0] * 4)
 
-sensor_value = 0x10203040
-spi_read_bytes = bytearray([0] * 4)
-spi_write_bytes = bytearray([0] * 4)
-
-
-async def spi_write_task():
-    global spi_read_bytes, spi_write_bytes, sensor_value, inter_subsystem_spi_bus
+async def spiWriteTask():
+    global spiReadBytes, spiWriteBytes, sensorValue, inter_subsystem_spi_bus
     while True:
-        # communicates data back to CDH
-        spi_write_bytes[0] = (sensor_value & 0xFF000000) >> 24
-        spi_write_bytes[1] = (sensor_value & 0xFF0000) >> 16
-        spi_write_bytes[2] = (sensor_value & 0xFF00) >> 8
-        spi_write_bytes[3] = (sensor_value & 0xFF) >> 0
-        await send_receive(spi_write_bytes, spi_read_bytes)
+        # communicates commands with subsystem X
+        spiWriteBytes[0] = (sensorValue & 0xFF000000) >> 24
+        spiWriteBytes[1] = (sensorValue & 0xFF0000) >> 16
+        spiWriteBytes[2] = (sensorValue & 0xFF00) >> 8
+        spiWriteBytes[3] = (sensorValue & 0xFF) >> 0
+        await send_receive(spiWriteBytes, spiReadBytes)
 
-
-async def sensor_read_task():
-    # regularly updates `sensor_value` based on the feedback from the sensor
-    global sensor_value
+async def sensorReadTask():
+    # regularly updates `sensorValue` based on the feedback from the sensor
+    global sensorValue
     while True:
-        sensor_value += 1
+        sensorValue += 1
         await asyncio.sleep(0.2)
 
-
-async def feedback_task():
+async def feedbackTask():
     # send debug data to the USB serial regularly
-    global sensor_value, spi_read_bytes, spi_write_bytes
+    global sensorValue, spiReadBytes, spiWriteBytes
     while True:
-        print("TST wrote", list(bytes(spi_write_bytes)), "to SPI")  # fix with [:-1]
-        print("TST read", list(bytes(spi_read_bytes)), "from SPI")  # fix with [:-1]
+        print("TST wrote", list(bytes(spiWriteBytes)), "to SPI")  # fix with [:-1]
+        print("TST read", list(bytes(spiReadBytes)), "from SPI")  # fix with [:-1]
         await asyncio.sleep(1)
 
+async def gatheredTask():
+    await asyncio.gather(feedbackTask(), spiWriteTask(), sensorReadTask())
 
-async def gathered_task():
-    await asyncio.gather(spi_write_task(), sensor_read_task(), feedback_task())
-
-
-if __name__ == "__main__":
-    asyncio.run(gathered_task())
+asyncio.run(gatheredTask())
