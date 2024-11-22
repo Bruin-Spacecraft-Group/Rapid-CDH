@@ -13,3 +13,19 @@ jobs:
         pip install pytest
     - run: |
         python tools/build_unit_tests.py --run_tests
+
+
+  static_analyzer:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+    - uses: actions/setup-python@v5
+    - run: |
+        python -m pip install --upgrade pip
+        pip install 'pylama[all]'
+    - run: |
+        pylama -o config/pylama.cfg applications unit_tests shared/drivers
+    
+    
