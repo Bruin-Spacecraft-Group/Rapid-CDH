@@ -44,26 +44,38 @@ class PinManager:
         return PinManager._instance
 
     def __init__(self):
-        self._pins = []
-        self._devices = []
+        self._pins = dict()
+        self._devices = dict()
 
     def _get_pin_reference(self, pin):
         if pin not in self._pins:
             self._pins[pin] = ManagedPin(pin)
         return self._pins[pin]
 
-    # helper function to create a managed device when the constructor for the device
-    # takes in only pin objects as parameters and has no positional arguments
-    def _create_simple_device(self, pins, device_type):
+    def _create_general_device(self, pins, device_type, device_producer):
         m_pins = [self._get_pin_reference(pin) for pin in pins]
-        return ManagedDevice(m_pins, (lambda: device_type(*tuple(pins))))
+        device_key = tuple(m_pins + [device_type])
+        if device_key not in self._devices:
+            self._devices[device_key] = ManagedDevice(m_pins, device_producer)
+        return self._devices[device_key]
 
     def create_digital_in_out(self, pin):
-        return self._create_simple_device([pin], digitalio.DigitalInOut)
+        return self._create_general_device(
+            [pin],
+            digitalio.DigitalInOut,
+            (lambda: digitalio.DigitalInOut(pin)),
+        )
 
     def create_spi(self, clock, MOSI, MISO):
-        return self._create_simple_device([clock, MOSI, MISO], busio.SPI)
+        return self._create_general_device(
+            [clock, MOSI, MISO],
+            busio.SPI,
+            (lambda: busio.SPI(clock, MOSI, MISO)),
+        )
 
     def create_i2c(self, scl, sda, frequency=100000):
-        m_pins = [self._get_pin_reference(pin) for pin in [scl, sda]]
-        return ManagedDevice(m_pins, (lambda: busio.I2C(scl, sda, frequency=frequency)))
+        return self._create_general_device(
+            [scl, sda],
+            busio.I2C,
+            (lambda: busio.I2C(scl, sda, frequency=frequency)),
+        )
