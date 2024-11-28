@@ -35,7 +35,9 @@ class ManagedDevice:
         for m_pin in self._managed_pins:
             m_pin.claimer = FreePinDevice(m_pin)
 
-    # Set the pins this device requires to use this device until
+    # Set the pins this device requires to be active and configured for this device
+    # until the next call to _reclaim(). Also increments the number of contexts in
+    # which this device is considered to be open and unable to be reclaimed
     def __enter__(self):
         if self._instance is not None:
             self._active_contexts += 1
@@ -52,6 +54,7 @@ class ManagedDevice:
         self._active_contexts += 1
         return self._instance
 
+    # Decrements the number of contexts in which this device is considered to be open
     def __exit__(self):
         self._active_contexts -= 1
 

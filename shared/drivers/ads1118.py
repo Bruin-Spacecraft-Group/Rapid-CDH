@@ -1,6 +1,9 @@
 import digitalio
+import busio
+import time
 
 import asyncio
+import pin_manager
 
 
 class ADS1118_MUX_SELECT:
@@ -35,17 +38,12 @@ class ADS1118_SAMPLE_RATE:
     RATE_860 = 7
 
 
-# When running on an spi bus slower than 40 kHz, async transfers should be used
-# to maintain responsiveness of all tasks. When running on an spi bus which is
-# faster than this, the overhead of ayncio context switching dominates the time
-# taken, and synchronous transfers are more efficient.
-ADS1118_ASYNC_TRANSFER = False
-
-
 class ADS1118:
-    def __init__(self, spi_device):
-        self.spi_device = spi_device
-        self.data_ready = digitalio.DigitalInOut(spi_device.get_MISO_pin())
+    def __init__(self, sck, mosi, miso, ss):
+        pm = pin_manager.PinManager.get_instance()
+        self.spi_bus = pm.create_spi(sck, mosi, miso)
+        self.drdy_gpio = pm.create_digital_in_out(miso)
+        self.ss_gpio = pm.create_digital_in_out(ss)
 
     # Returns either the voltage in volts, or the temperature in degrees Celsius
     async def take_sample(
@@ -60,37 +58,32 @@ class ADS1118:
         )
         receive_buffer = bytearray([0, 0])
 
-        if ADS1118_ASYNC_TRANSFER:
-            await self.spi_device.async_transfer(transmit_buffer, receive_buffer)
-        else:
-            while not self.spi_device.get_spi().try_lock():
-                await asyncio.sleep(0)
-            self.spi_device.get_chip_select_pin().value = False
-            self.spi_device.get_spi().write_readinto(transmit_buffer, receive_buffer)
-            self.spi_device.get_chip_select_pin().value = True
-            self.spi_device.get_spi().unlock()
+        with self.spi_bus as spi, self.ss_gpio as ss:
+            spi.try_lock()
+            ss.value = False
+            spi.write_readinto(transmit_buffer, receive_buffer)
+            ss.value = True
+            spi.unlock()
 
         data_ready = False
         while not data_ready:
             await asyncio.sleep(0)
-            while not self.spi_device.get_spi().try_lock():
-                await asyncio.sleep(0)
+            with self.drdy_gpio as drdy, self.ss_gpio as ss:
+                ss.value = False
+                # busy-wait for CS to DRDY propogation time
+                # don't do this async because we're currently holding onto hardware
+                t0 = time.monotonic_ns()
+                while (time.monotonic_ns() - t0) < 100e-9:
+                    pass
+                data_ready = not drdy.value
+                ss.value = True
 
-            self.spi_device.get_chip_select_pin().value = False
-            await asyncio.sleep(100e-9)  # CS to DRDY propogation time
-            data_ready = not self.data_ready.value
-            self.spi_device.get_chip_select_pin().value = True
-            self.spi_device.get_spi().unlock()
-
-        if ADS1118_ASYNC_TRANSFER:
-            await self.spi_device.async_transfer(transmit_buffer, receive_buffer)
-        else:
-            while not self.spi_device.get_spi().try_lock():
-                await asyncio.sleep(0)
-            self.spi_device.get_chip_select_pin().value = False
-            self.spi_device.get_spi().write_readinto(transmit_buffer, receive_buffer)
-            self.spi_device.get_chip_select_pin().value = True
-            self.spi_device.get_spi().unlock()
+        with self.spi_bus as spi, self.ss_gpio as ss:
+            spi.try_lock()
+            ss.value = False
+            spi.write_readinto(transmit_buffer, receive_buffer)
+            ss.value = True
+            spi.unlock()
 
         if channel == ADS1118_MUX_SELECT.TEMPERATURE:
             return ADS1118._temperature_from_bytes(receive_buffer)
