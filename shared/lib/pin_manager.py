@@ -5,8 +5,7 @@ import busio
 class ManagedPin:
     def __init__(self, pin):
         self.pin = pin
-        self.is_claimed = False
-        self.claimer = digitalio.DigitalInOut(self.pin)
+        self.claimer = FreePinDevice(self)
 
 
 class ManagedDevice:
@@ -14,25 +13,64 @@ class ManagedDevice:
         self._managed_pins = managed_pins
         self._device_producer = device_producer
         self._instance = None
+        self._active_contexts = 0
 
+    # True if a call to __enter__() would do nothing to the hardware because
+    # a context for this device is already active (or an explicit call to
+    # __enter__() has been made)
+    def is_running(self):
+        return self._instance is not None
+
+    # True if a call to _reclaim() would result in an exception, since
+    # a context for this device is still active. Calling __exit__() destroys
+    # an active context for the device
+    def is_busy(self):
+        return self._active_contexts != 0
+
+    def _reclaim(self):
+        if self._active_contexts != 0:
+            raise ValueError("Cannot reclaim device which is still open")
+        self._instance.deinit()
+        self._instance = None
+        for m_pin in self._managed_pins:
+            m_pin.claimer = FreePinDevice(m_pin)
+
+    # Set the pins this device requires to use this device until
     def __enter__(self):
+        if self._instance is not None:
+            self._active_contexts += 1
+            return self._instance
         for m_pin in self._managed_pins:
-            if m_pin.is_claimed:
-                raise ValueError("Pin in use as " + str(type(m_pin.claimer)))
+            if m_pin.claimer.is_running():
+                m_pin.claimer._reclaim()
         for m_pin in self._managed_pins:
-            m_pin.claimer.__exit__()
+            m_pin.claimer._reclaim()
         self._instance = self._device_producer()
         for m_pin in self._managed_pins:
             m_pin.claimer = self._instance
             m_pin.is_claimed = True
+        self._active_contexts += 1
         return self._instance
 
     def __exit__(self):
-        self._instance.__exit__()
-        for m_pin in self._managed_pins:
-            m_pin.claimer.__exit__()
-            m_pin.is_claimed = False
-            m_pin.claimer = digitalio.DigitalInOut(m_pin.pin)
+        self._active_contexts -= 1
+
+
+class FreePinDevice:
+    def __init__(self, managed_pin):
+        self.m_pin = managed_pin
+        self._instance = digitalio.DigitalInOut(self.m_pin.pin)
+
+    def is_running(self):
+        return self._instance is not None
+
+    def is_busy(self):
+        return False
+
+    def _reclaim(self):
+        if self._instance is not None:
+            self._instance.deinit()
+            self._instance = None
 
 
 class PinManager:
