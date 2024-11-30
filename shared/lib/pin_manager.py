@@ -5,7 +5,7 @@ import busio
 class ManagedPin:
     def __init__(self, pin):
         self.pin = pin
-        self.claimer = FreePinDevice(self)
+        self.claimer = DefaultPinClaimer(self)
 
 
 class ManagedDevice:
@@ -24,16 +24,17 @@ class ManagedDevice:
     # True if a call to _reclaim() would result in an exception, since
     # a context for this device is still active. Calling __exit__() destroys
     # an active context for the device
+    # if a device is not running, it cannot be busy
     def is_busy(self):
         return self._active_contexts != 0
 
     def _reclaim(self):
         if self._active_contexts != 0:
-            raise ValueError("Cannot reclaim device which is still open")
+            raise RuntimeError("Cannot reclaim device which is still open")
         self._instance.deinit()
         self._instance = None
         for m_pin in self._managed_pins:
-            m_pin.claimer = FreePinDevice(m_pin)
+            m_pin.claimer = DefaultPinClaimer(m_pin)
 
     # Set the pins this device requires to be active and configured for this device
     # until the next call to _reclaim(). Also increments the number of contexts in
@@ -49,17 +50,17 @@ class ManagedDevice:
             m_pin.claimer._reclaim()
         self._instance = self._device_producer()
         for m_pin in self._managed_pins:
-            m_pin.claimer = self._instance
+            m_pin.claimer = self
             m_pin.is_claimed = True
         self._active_contexts += 1
         return self._instance
 
     # Decrements the number of contexts in which this device is considered to be open
-    def __exit__(self):
+    def __exit__(self, exc_type, exc, exc_trace):
         self._active_contexts -= 1
 
 
-class FreePinDevice:
+class DefaultPinClaimer:
     def __init__(self, managed_pin):
         self.m_pin = managed_pin
         self._instance = digitalio.DigitalInOut(self.m_pin.pin)
